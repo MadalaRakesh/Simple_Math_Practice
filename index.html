@@ -18,6 +18,10 @@
       font-size: 24px;
       margin: 20px 0;
     }
+    .question span {
+      font-weight: bold;
+      color: black; /* Black color for "What is?" */
+    }
     input {
       padding: 10px;
       font-size: 16px;
@@ -46,9 +50,9 @@
     }
     .grid {
       display: grid;
-      grid-template-columns: repeat(6, 1fr); /* 6x6 grid */
+      grid-template-columns: repeat(12, 1fr); /* 12x12 grid */
       gap: 5px;
-      max-width: 400px;
+      max-width: 960px;
       margin: 20px auto;
     }
     .grid-item {
@@ -63,12 +67,20 @@
       background-color: #ffcc00;
       font-weight: bold;
     }
+    .correct {
+      color: green;
+      font-weight: bold;
+    }
+    .incorrect {
+      color: red;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <h1>Math Practice App</h1>
   <div>
-    <label for="mode">Choose Mode:</label>
+    <label for="mode">Choose Arithmetic Operation:</label>
     <select id="mode">
       <option value="addition">Addition</option>
       <option value="subtraction">Subtraction</option>
@@ -77,6 +89,8 @@
       <option value="random">Random</option>
     </select>
     
+    <br> <!-- Add line break for timer select -->
+
     <label for="timer">Choose Timer (seconds):</label>
     <select id="timer">
       <option value="15">15</option>
@@ -87,7 +101,6 @@
 
     <button onclick="startPractice()">Start</button>
     <button onclick="toggleTimer()">Stop Timer</button>
-    <button onclick="pausePractice()">Pause Practice</button>
   </div>
 
   <div class="question" id="question">Press "Start" to begin!</div>
@@ -96,6 +109,8 @@
   <div class="result" id="result"></div>
 
   <div class="grid" id="questionGrid"></div>
+
+  <button onclick="pausePractice()">Pause Practice</button> <!-- Pause practice moved to the end -->
 
   <script>
     let questions = [];
@@ -107,30 +122,30 @@
     let isPaused = false;
     let currentTimerDuration = 60; // Default timer duration
 
-    // Generate 36 questions (6x6 grid)
+    // Generate 144 questions (12x12 grid)
     function generateQuestions(mode) {
       questions = [];
-      for (let i = 0; i < 36; i++) {
+      for (let i = 0; i < 144; i++) {
         const num1 = Math.floor(Math.random() * 12) + 1;
         const num2 = Math.floor(Math.random() * 12) + 1;
         let question, answer;
 
         switch (mode) {
           case "addition":
-            question = `What is ${num1} + ${num2}?`;
+            question = `${num1} + ${num2}`;
             answer = num1 + num2;
             break;
           case "subtraction":
-            question = `What is ${num1} - ${num2}?`;
+            question = `${num1} - ${num2}`;
             answer = num1 - num2;
             break;
           case "multiplication":
-            question = `What is ${num1} × ${num2}?`;
+            question = `${num1} × ${num2}`;
             answer = num1 * num2;
             break;
           case "division":
             const dividend = num1 * num2; // Clean division
-            question = `What is ${dividend} ÷ ${num2}?`;
+            question = `${dividend} ÷ ${num2}`;
             answer = num1;
             break;
           case "random":
@@ -152,7 +167,7 @@
         if (index === currentQuestionIndex) {
           gridItem.classList.add("current");
         }
-        gridItem.innerText = q.question; // Show full question
+        gridItem.innerText = q.question; // Show only the problem, not "What is?"
         grid.appendChild(gridItem);
       });
     }
@@ -177,7 +192,7 @@
     // Load a question
     function loadQuestion() {
       const current = questions[currentQuestionIndex];
-      document.getElementById("question").innerText = current.question;
+      document.getElementById("question").innerHTML = `<span>What is?</span> ${current.question}`;
       correctAnswer = current.answer;
       document.getElementById("answer").value = "";
       displayGrid();
@@ -186,12 +201,14 @@
     // Check answer
     function checkAnswer() {
       const userAnswer = parseFloat(document.getElementById("answer").value);
+      const resultElement = document.getElementById("result");
+
       if (userAnswer === correctAnswer) {
-        document.getElementById("result").innerText = `Correct! ${questions[currentQuestionIndex].question.replace("?", "")} = ${correctAnswer}`;
+        resultElement.innerHTML = `<span class="correct">Correct!</span> <br> ${questions[currentQuestionIndex].question} = ${correctAnswer}`;
         totalQuestionsAnswered++;
         nextQuestion();
       } else {
-        document.getElementById("result").innerText = `Incorrect. Correct answer: ${correctAnswer}`;
+        resultElement.innerHTML = `<span class="incorrect">Incorrect. Correct answer: ${correctAnswer}</span>`;
       }
     }
 
@@ -218,7 +235,7 @@
       clearTimer();
       let timeLeft = currentTimerDuration; // Use selected timer duration
       timer = setInterval(() => {
-        document.getElementById("result").innerText = `Time left: ${timeLeft} seconds`;
+        document.getElementById("result").innerHTML = `Time left: <br> ${timeLeft} seconds`;
         timeLeft--;
         if (timeLeft < 0) {
           clearTimer();

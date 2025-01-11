@@ -152,7 +152,7 @@
         if (index === currentQuestionIndex) {
           gridItem.classList.add("current");
         }
-        gridItem.innerText = q.question.split(" ")[2]; // Show partial question
+        gridItem.innerText = q.question; // Show full question
         grid.appendChild(gridItem);
       });
     }

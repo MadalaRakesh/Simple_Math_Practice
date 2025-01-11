@@ -46,9 +46,9 @@
     }
     .grid {
       display: grid;
-      grid-template-columns: repeat(12, 1fr);
+      grid-template-columns: repeat(6, 1fr); /* 6x6 grid */
       gap: 5px;
-      max-width: 600px;
+      max-width: 400px;
       margin: 20px auto;
     }
     .grid-item {
@@ -76,6 +76,15 @@
       <option value="division">Division</option>
       <option value="random">Random</option>
     </select>
+    
+    <label for="timer">Choose Timer (seconds):</label>
+    <select id="timer">
+      <option value="15">15</option>
+      <option value="30">30</option>
+      <option value="60" selected>60</option>
+      <option value="180">180</option>
+    </select>
+
     <button onclick="startPractice()">Start</button>
     <button onclick="toggleTimer()">Stop Timer</button>
     <button onclick="pausePractice()">Pause Practice</button>
@@ -96,11 +105,12 @@
     let timer = null;
     let timerRunning = false;
     let isPaused = false;
+    let currentTimerDuration = 60; // Default timer duration
 
-    // Generate 144 questions (12x12 grid)
+    // Generate 36 questions (6x6 grid)
     function generateQuestions(mode) {
       questions = [];
-      for (let i = 0; i < 144; i++) {
+      for (let i = 0; i < 36; i++) {
         const num1 = Math.floor(Math.random() * 12) + 1;
         const num2 = Math.floor(Math.random() * 12) + 1;
         let question, answer;
@@ -153,6 +163,8 @@
         resumePractice();
         return;
       }
+
+      currentTimerDuration = parseInt(document.getElementById("timer").value); // Get selected timer duration
       const mode = document.getElementById("mode").value;
       generateQuestions(mode);
       currentQuestionIndex = 0;
@@ -204,7 +216,7 @@
 
     function resetTimer() {
       clearTimer();
-      let timeLeft = 60; // 1-minute timer
+      let timeLeft = currentTimerDuration; // Use selected timer duration
       timer = setInterval(() => {
         document.getElementById("result").innerText = `Time left: ${timeLeft} seconds`;
         timeLeft--;

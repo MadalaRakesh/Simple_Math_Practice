@@ -56,7 +56,7 @@
       text-align: center;
       background-color: #ddd;
       border: 1px solid #aaa;
-      font-size: 14px;
+      font-size: 12px;
       color: #000;
     }
     .grid-item.current {
@@ -78,6 +78,7 @@
     </select>
     <button onclick="startPractice()">Start</button>
     <button onclick="toggleTimer()">Stop Timer</button>
+    <button onclick="pausePractice()">Pause Practice</button>
   </div>
 
   <div class="question" id="question">Press "Start" to begin!</div>
@@ -94,6 +95,7 @@
     let totalQuestionsAnswered = 0;
     let timer = null;
     let timerRunning = false;
+    let isPaused = false;
 
     // Generate 144 questions (12x12 grid)
     function generateQuestions(mode) {
@@ -147,6 +149,10 @@
 
     // Start practice
     function startPractice() {
+      if (isPaused) {
+        resumePractice();
+        return;
+      }
       const mode = document.getElementById("mode").value;
       generateQuestions(mode);
       currentQuestionIndex = 0;
@@ -213,6 +219,31 @@
       clearInterval(timer);
       timerRunning = false;
     }
+
+    // Pause Practice
+    function pausePractice() {
+      if (isPaused) {
+        resumePractice();
+      } else {
+        isPaused = true;
+        clearTimer();
+        document.getElementById("result").innerText = "Practice Paused. Click Resume to continue.";
+      }
+    }
+
+    function resumePractice() {
+      isPaused = false;
+      startTimer();
+      document.getElementById("result").innerText = "";
+      loadQuestion();
+    }
+
+    // Press Enter to submit answer
+    document.getElementById("answer").addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        checkAnswer();
+      }
+    });
 
     function toggleTimer() {
       if (timerRunning) {

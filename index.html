@@ -3,21 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Times Table Practice</title>
+  <title>Math Practice</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
       background-color: #f0f8ff;
-      margin: 0;
-      padding: 0;
     }
     h1 {
       color: #333;
-      margin-top: 20px;
-    }
-    .container {
-      padding: 20px;
     }
     .question {
       font-size: 24px;
@@ -35,108 +29,201 @@
       color: #fff;
       border: none;
       cursor: pointer;
-      margin: 10px;
+      margin: 5px;
     }
     button:hover {
       background-color: #218838;
     }
-    .result, .progress, .timer {
+    select {
+      padding: 10px;
+      font-size: 16px;
+      margin: 10px;
+    }
+    .result {
       margin-top: 20px;
       font-size: 20px;
       color: #444;
     }
-    .difficulty {
-      margin-bottom: 20px;
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 5px;
+      max-width: 500px;
+      margin: 20px auto;
+    }
+    .grid-item {
+      padding: 10px;
+      text-align: center;
+      background-color: #ddd;
+      border: 1px solid #aaa;
+      font-size: 14px;
+    }
+    .grid-item.current {
+      background-color: #ffcc00;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <h1>Times Table Practice</h1>
-  <div class="container">
-    <div class="difficulty">
-      <label for="difficulty">Choose difficulty: </label>
-      <select id="difficulty" onchange="setDifficulty()">
-        <option value="5">Easy (1–5)</option>
-        <option value="10" selected>Medium (1–10)</option>
-        <option value="12">Hard (1–12)</option>
-      </select>
-    </div>
-    <div class="question" id="question">What is 2 × 3?</div>
-    <input type="number" id="answer" placeholder="Your answer">
-    <button onclick="checkAnswer()">Submit</button>
-    <button onclick="newQuestion()">New Question</button>
-    <div class="result" id="result"></div>
-    <div class="progress" id="progress">Correct answers: 0</div>
-    <div class="timer" id="timer">Time left: 30 seconds</div>
+  <h1>Math Practice</h1>
+  <div>
+    <label for="mode">Choose Mode:</label>
+    <select id="mode">
+      <option value="addition">Addition</option>
+      <option value="subtraction">Subtraction</option>
+      <option value="multiplication" selected>Multiplication</option>
+      <option value="division">Division</option>
+      <option value="random">Random</option>
+    </select>
+    <button onclick="startPractice()">Start</button>
+    <button onclick="toggleTimer()">Stop Timer</button>
   </div>
 
+  <div class="question" id="question">Press "Start" to begin!</div>
+  <input type="number" id="answer" placeholder="Your answer">
+  <button onclick="checkAnswer()">Submit</button>
+  <button onclick="newQuestion()">Next Question</button>
+  <div class="result" id="result"></div>
+
+  <div class="grid" id="questionGrid"></div>
+
   <script>
-    let correctAnswer = 6;
-    let correctCount = 0;
-    let maxRange = 10; // Default difficulty (medium)
-    let timer;
-    let timeLeft = 30;
+    let correctAnswer = null;
+    let timer = null;
+    let timerRunning = true;
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let totalQuestionsAnswered = 0;
 
-    function generateQuestion() {
-      const num1 = Math.floor(Math.random() * maxRange) + 1;
-      const num2 = Math.floor(Math.random() * maxRange) + 1;
-      correctAnswer = num1 * num2;
-      document.getElementById('question').innerText = `What is ${num1} × ${num2}?`;
-      document.getElementById('result').innerText = '';
-      document.getElementById('answer').value = '';
-    }
+    // Generate 100 random questions
+    function generateQuestions(mode) {
+      questions = [];
+      for (let i = 0; i < 100; i++) {
+        const num1 = Math.floor(Math.random() * 12) + 1;
+        const num2 = Math.floor(Math.random() * 12) + 1;
+        let question, answer;
 
-    function checkAnswer() {
-      const userAnswer = parseInt(document.getElementById('answer').value, 10);
-      if (userAnswer === correctAnswer) {
-        correctCount++;
-        document.getElementById('result').innerText = 'Correct! 🎉';
-        document.getElementById('result').style.color = 'green';
-        updateProgress();
-      } else {
-        document.getElementById('result').innerText = `Incorrect. The correct answer is ${correctAnswer}.`;
-        document.getElementById('result').style.color = 'red';
+        switch (mode) {
+          case "addition":
+            question = `${num1} + ${num2}`;
+            answer = num1 + num2;
+            break;
+          case "subtraction":
+            question = `${num1} - ${num2}`;
+            answer = num1 - num2;
+            break;
+          case "multiplication":
+            question = `${num1} × ${num2}`;
+            answer = num1 * num2;
+            break;
+          case "division":
+            const dividend = num1 * num2; // Ensure clean division
+            question = `${dividend} ÷ ${num2}`;
+            answer = num1;
+            break;
+          case "random":
+          default:
+            const operations = ["addition", "subtraction", "multiplication", "division"];
+            const randomMode = operations[Math.floor(Math.random() * operations.length)];
+            return generateQuestions(randomMode);
+        }
+
+        questions.push({ question, answer });
       }
     }
 
-    function newQuestion() {
-      generateQuestion();
-    }
-
-    function setDifficulty() {
-      const difficulty = document.getElementById('difficulty').value;
-      maxRange = parseInt(difficulty, 10);
-      newQuestion();
-    }
-
-    function updateProgress() {
-      document.getElementById('progress').innerText = `Correct answers: ${correctCount}`;
-    }
-
-    function startTimer() {
-      clearInterval(timer);
-      timeLeft = 30; // Reset timer
-      document.getElementById('timer').innerText = `Time left: ${timeLeft} seconds`;
-
-      timer = setInterval(() => {
-        timeLeft--;
-        document.getElementById('timer').innerText = `Time left: ${timeLeft} seconds`;
-
-        if (timeLeft <= 0) {
-          clearInterval(timer);
-          document.getElementById('result').innerText = `Time's up! You answered ${correctCount} questions correctly.`;
-          document.getElementById('result').style.color = 'blue';
-          correctCount = 0; // Reset progress
-          updateProgress();
-          generateQuestion(); // Start over with a new question
-          startTimer(); // Restart the timer
+    // Display grid
+    function displayGrid() {
+      const grid = document.getElementById("questionGrid");
+      grid.innerHTML = ""; // Clear existing grid
+      questions.forEach((q, index) => {
+        const gridItem = document.createElement("div");
+        gridItem.className = "grid-item";
+        if (index === currentQuestionIndex) {
+          gridItem.classList.add("current");
         }
+        gridItem.innerText = q.question;
+        grid.appendChild(gridItem);
+      });
+    }
+
+    // Start practice
+    function startPractice() {
+      const mode = document.getElementById("mode").value;
+      generateQuestions(mode);
+      currentQuestionIndex = 0;
+      totalQuestionsAnswered = 0;
+      loadQuestion();
+      displayGrid();
+      startTimer();
+    }
+
+    // Load a question
+    function loadQuestion() {
+      const current = questions[currentQuestionIndex];
+      document.getElementById("question").innerText = current.question;
+      correctAnswer = current.answer;
+      document.getElementById("answer").value = "";
+      displayGrid();
+    }
+
+    // Check the answer
+    function checkAnswer() {
+      const userAnswer = parseFloat(document.getElementById("answer").value);
+      if (userAnswer === correctAnswer) {
+        document.getElementById("result").innerText = "Correct! 🎉";
+        document.getElementById("result").style.color = "green";
+        totalQuestionsAnswered++;
+        handleMilestones();
+      } else {
+        document.getElementById("result").innerText = `Incorrect. The correct answer is ${correctAnswer}.`;
+        document.getElementById("result").style.color = "red";
+      }
+    }
+
+    // Handle milestone messages
+    function handleMilestones() {
+      if (totalQuestionsAnswered === 10) {
+        alert("Great job! Keep going!");
+      } else if (totalQuestionsAnswered === 100) {
+        alert("Amazing! You’ve completed 100 questions!");
+      } else if (totalQuestionsAnswered === 200) {
+        alert("Incredible! You’ve finished 200 questions!");
+      } else if (totalQuestionsAnswered === 500) {
+        alert("Champion! You're unstoppable!");
+      }
+    }
+
+    // Move to the next question
+    function newQuestion() {
+      currentQuestionIndex++;
+      if (currentQuestionIndex >= questions.length) {
+        document.getElementById("result").innerText = "You've completed all questions!";
+        return;
+      }
+      loadQuestion();
+    }
+
+    // Start the timer
+    function startTimer() {
+      if (timerRunning) return;
+      timerRunning = true;
+      timer = setInterval(() => {
+        const currentTime = new Date();
+        document.getElementById("result").innerText = `Time: ${currentTime.toLocaleTimeString()}`;
       }, 1000);
     }
 
-    // Initialize the app
-    generateQuestion();
-    startTimer();
+    // Toggle the timer
+    function toggleTimer() {
+      if (timerRunning) {
+        clearInterval(timer);
+        timerRunning = false;
+        document.getElementById("result").innerText = "Timer stopped.";
+      } else {
+        startTimer();
+      }
+    }
   </script>
 </body>
 </html>

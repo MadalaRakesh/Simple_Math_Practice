@@ -8,10 +8,11 @@
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background-color: #f0f8ff;
+      background-color: #009999;
+      color: #fff;
     }
     h1 {
-      color: #333;
+      color: #fff;
     }
     .question {
       font-size: 24px;
@@ -42,13 +43,12 @@
     .result {
       margin-top: 20px;
       font-size: 20px;
-      color: #444;
     }
     .grid {
       display: grid;
-      grid-template-columns: repeat(10, 1fr);
+      grid-template-columns: repeat(12, 1fr);
       gap: 5px;
-      max-width: 500px;
+      max-width: 600px;
       margin: 20px auto;
     }
     .grid-item {
@@ -57,6 +57,7 @@
       background-color: #ddd;
       border: 1px solid #aaa;
       font-size: 14px;
+      color: #000;
     }
     .grid-item.current {
       background-color: #ffcc00;
@@ -94,34 +95,35 @@
     let timer = null;
     let timerRunning = false;
 
-    // Generate 100 questions
+    // Generate 144 questions (12x12 grid)
     function generateQuestions(mode) {
       questions = [];
-      for (let i = 0; i < 100; i++) {
+      for (let i = 0; i < 144; i++) {
         const num1 = Math.floor(Math.random() * 12) + 1;
         const num2 = Math.floor(Math.random() * 12) + 1;
         let question, answer;
 
         switch (mode) {
           case "addition":
-            question = `${num1} + ${num2}`;
+            question = `What is ${num1} + ${num2}?`;
             answer = num1 + num2;
             break;
           case "subtraction":
-            question = `${num1} - ${num2}`;
+            question = `What is ${num1} - ${num2}?`;
             answer = num1 - num2;
             break;
           case "multiplication":
-            question = `${num1} × ${num2}`;
+            question = `What is ${num1} × ${num2}?`;
             answer = num1 * num2;
             break;
           case "division":
             const dividend = num1 * num2; // Clean division
-            question = `${dividend} ÷ ${num2}`;
+            question = `What is ${dividend} ÷ ${num2}?`;
             answer = num1;
             break;
-          default:
-            return generateQuestions(["addition", "subtraction", "multiplication", "division"][Math.floor(Math.random() * 4)]);
+          case "random":
+            const modes = ["addition", "subtraction", "multiplication", "division"];
+            return generateQuestions(modes[Math.floor(Math.random() * modes.length)]);
         }
 
         questions.push({ question, answer });
@@ -138,7 +140,7 @@
         if (index === currentQuestionIndex) {
           gridItem.classList.add("current");
         }
-        gridItem.innerText = q.question;
+        gridItem.innerText = q.question.split(" ")[2]; // Show partial question
         grid.appendChild(gridItem);
       });
     }
@@ -167,25 +169,11 @@
     function checkAnswer() {
       const userAnswer = parseFloat(document.getElementById("answer").value);
       if (userAnswer === correctAnswer) {
-        document.getElementById("result").innerText = "Correct! 🎉";
+        document.getElementById("result").innerText = `Correct! ${questions[currentQuestionIndex].question.replace("?", "")} = ${correctAnswer}`;
         totalQuestionsAnswered++;
-        handleMilestones();
         nextQuestion();
       } else {
         document.getElementById("result").innerText = `Incorrect. Correct answer: ${correctAnswer}`;
-      }
-    }
-
-    // Handle milestones
-    function handleMilestones() {
-      if ([10, 100, 200, 500].includes(totalQuestionsAnswered)) {
-        const messages = {
-          10: "Great job! Keep going!",
-          100: "Amazing! You’ve completed 100 questions!",
-          200: "Incredible! You’ve finished 200 questions!",
-          500: "Champion! You're unstoppable!"
-        };
-        alert(messages[totalQuestionsAnswered]);
       }
     }
 
@@ -210,7 +198,7 @@
 
     function resetTimer() {
       clearTimer();
-      let timeLeft = 10; // 10 seconds per question
+      let timeLeft = 60; // 1-minute timer
       timer = setInterval(() => {
         document.getElementById("result").innerText = `Time left: ${timeLeft} seconds`;
         timeLeft--;

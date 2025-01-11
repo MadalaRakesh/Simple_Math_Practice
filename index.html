@@ -9,9 +9,15 @@
       font-family: Arial, sans-serif;
       text-align: center;
       background-color: #f0f8ff;
+      margin: 0;
+      padding: 0;
     }
     h1 {
       color: #333;
+      margin-top: 20px;
+    }
+    .container {
+      padding: 20px;
     }
     .question {
       font-size: 24px;
@@ -34,27 +40,46 @@
     button:hover {
       background-color: #218838;
     }
-    .result {
+    .result, .progress, .timer {
       margin-top: 20px;
       font-size: 20px;
       color: #444;
+    }
+    .difficulty {
+      margin-bottom: 20px;
     }
   </style>
 </head>
 <body>
   <h1>Times Table Practice</h1>
-  <div class="question" id="question">What is 2 × 3?</div>
-  <input type="number" id="answer" placeholder="Your answer">
-  <button onclick="checkAnswer()">Submit</button>
-  <button onclick="newQuestion()">New Question</button>
-  <div class="result" id="result"></div>
+  <div class="container">
+    <div class="difficulty">
+      <label for="difficulty">Choose difficulty: </label>
+      <select id="difficulty" onchange="setDifficulty()">
+        <option value="5">Easy (1–5)</option>
+        <option value="10" selected>Medium (1–10)</option>
+        <option value="12">Hard (1–12)</option>
+      </select>
+    </div>
+    <div class="question" id="question">What is 2 × 3?</div>
+    <input type="number" id="answer" placeholder="Your answer">
+    <button onclick="checkAnswer()">Submit</button>
+    <button onclick="newQuestion()">New Question</button>
+    <div class="result" id="result"></div>
+    <div class="progress" id="progress">Correct answers: 0</div>
+    <div class="timer" id="timer">Time left: 30 seconds</div>
+  </div>
 
   <script>
     let correctAnswer = 6;
+    let correctCount = 0;
+    let maxRange = 10; // Default difficulty (medium)
+    let timer;
+    let timeLeft = 30;
 
     function generateQuestion() {
-      const num1 = Math.floor(Math.random() * 12) + 1;
-      const num2 = Math.floor(Math.random() * 12) + 1;
+      const num1 = Math.floor(Math.random() * maxRange) + 1;
+      const num2 = Math.floor(Math.random() * maxRange) + 1;
       correctAnswer = num1 * num2;
       document.getElementById('question').innerText = `What is ${num1} × ${num2}?`;
       document.getElementById('result').innerText = '';
@@ -64,8 +89,10 @@
     function checkAnswer() {
       const userAnswer = parseInt(document.getElementById('answer').value, 10);
       if (userAnswer === correctAnswer) {
+        correctCount++;
         document.getElementById('result').innerText = 'Correct! 🎉';
         document.getElementById('result').style.color = 'green';
+        updateProgress();
       } else {
         document.getElementById('result').innerText = `Incorrect. The correct answer is ${correctAnswer}.`;
         document.getElementById('result').style.color = 'red';
@@ -76,8 +103,40 @@
       generateQuestion();
     }
 
-    // Generate the first question
+    function setDifficulty() {
+      const difficulty = document.getElementById('difficulty').value;
+      maxRange = parseInt(difficulty, 10);
+      newQuestion();
+    }
+
+    function updateProgress() {
+      document.getElementById('progress').innerText = `Correct answers: ${correctCount}`;
+    }
+
+    function startTimer() {
+      clearInterval(timer);
+      timeLeft = 30; // Reset timer
+      document.getElementById('timer').innerText = `Time left: ${timeLeft} seconds`;
+
+      timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timer').innerText = `Time left: ${timeLeft} seconds`;
+
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          document.getElementById('result').innerText = `Time's up! You answered ${correctCount} questions correctly.`;
+          document.getElementById('result').style.color = 'blue';
+          correctCount = 0; // Reset progress
+          updateProgress();
+          generateQuestion(); // Start over with a new question
+          startTimer(); // Restart the timer
+        }
+      }, 1000);
+    }
+
+    // Initialize the app
     generateQuestion();
+    startTimer();
   </script>
 </body>
 </html>
